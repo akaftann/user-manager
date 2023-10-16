@@ -42,6 +42,27 @@ class UserService{
         }
     }
 
+    async changeBoss(id, updUserId, newBossId){
+        try{
+            const boss = await dbService.getById(id)
+            const user = await dbService.getById(updUserId)
+            if(!user){
+                throw new Error('User not found')
+            }
+            const newBoss = await dbService.getById(newBossId)
+            if(!newBoss){
+                throw new Error('New boss not found')
+            }
+            if(!boss.subordinates.includes(updUserId)){
+                throw new Error('only user\'s boss can update')
+            }
+            const updated = await dbService.changeBoss(boss, user, newBoss)
+            return updated
+        }catch(e){
+            return e.message
+        }
+    }
+
     async login(username, password){
         try{
             const user = await dbService.getUser(username)

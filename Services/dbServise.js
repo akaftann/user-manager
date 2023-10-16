@@ -60,6 +60,24 @@ class DBService{
         const user = await User.findById(id)
         return user
     }
+
+    async changeBoss(boss, user, newBoss){
+        try{
+            const updatedUser = await User.findByIdAndUpdate(user._id, {boss: newBoss._id},{ new: true })
+            const updatedNewBoss = await User.findByIdAndUpdate(newBoss, {$addToSet:{subordinates: updatedUser._id}},{ new: true })
+            if(!updatedNewBoss.roles.includes('boss')){
+                await User.findByIdAndUpdate(updatedNewBoss._id, {$addToSet:{roles: 'boss'}},{ new: true })
+            }
+            const apdatedBoss = await User.findByIdAndUpdate(boss._id, {$pull:{subordinates: updatedUser._id}},{ new: true })
+            if(apdatedBoss.subordinates.length === 0){
+                apdatedBoss = await User.findByIdAndUpdate(boss._id, {$pull:{roles: 'boss'}},{ new: true })
+            }
+            return updatedUser
+        }catch(e){
+            return e
+        }
+
+    }
 }
 
 export default new DBService()

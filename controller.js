@@ -56,6 +56,24 @@ class authController {
         res.status(200).json({token})
     }
 
+    async changeBoss(req,res){
+        const token = req.headers.authorization
+        if(!token){
+            return res.status(403).json('Unautorized user')
+        }
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){
+            return res.status(400).json(errors)
+        }
+        const {id} = jwtService.parseToken(token.split(' ')[1])
+        const {updUserId, newBossId} = req.body
+        const newUser =  await userService.changeBoss(id, updUserId, newBossId)
+        if(newUser instanceof Error){
+            return res.status(400).json(newUser)
+        }
+        res.status(200).json(newUser)
+    }
+
     async createRoles(req,res){
         const userRole = new Role()
         const adminRole = new Role({value: 'admin'})
